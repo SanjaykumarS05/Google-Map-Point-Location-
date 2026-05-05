@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Google Maps Demo</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: #0f1117;
+      color: #e8e6df;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    header {
+      background: #1a1d27;
+      border-bottom: 1px solid #2a2d3a;
+      padding: 14px 24px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      z-index: 10;
+    }
+
+    header h1 {
+      font-size: 16px;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+      color: #e8e6df;
+    }
+
+    .badge {
+      font-size: 11px;
+      background: #2563eb22;
+      color: #60a5fa;
+      border: 1px solid #2563eb44;
+      padding: 2px 10px;
+      border-radius: 20px;
+      font-weight: 500;
+    }
+
+    .main {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+    }
+
+    /* Sidebar */
+    .sidebar {
+      width: 320px;
+      background: #1a1d27;
+      border-right: 1px solid #2a2d3a;
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+    }
+
+    .search-section {
+      padding: 20px;
+      border-bottom: 1px solid #2a2d3a;
+    }
+
+    .search-section label {
+      display: block;
+      font-size: 11px;
+      color: #6b7280;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+      font-weight: 500;
+    }
+
+    .search-row {
+      display: flex;
+      gap: 8px;
+    }
+
+    #searchInput {
+      flex: 1;
+      background: #0f1117;
+      border: 1px solid #2a2d3a;
+      color: #e8e6df;
+      padding: 10px 14px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-family: inherit;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    #searchInput:focus {
+      border-color: #2563eb;
+    }
+
+    #searchInput::placeholder { color: #4b5563; }
+
+    #searchBtn {
+      background: #2563eb;
+      color: white;
+      border: none;
+      padding: 10px 16px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-family: inherit;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.2s;
+      white-space: nowrap;
+    }
+
+    #searchBtn:hover { background: #1d4ed8; }
+
+    /* Info panel */
+    .info-section {
+      padding: 20px;
+      border-bottom: 1px solid #2a2d3a;
+    }
+
+    .info-section h3 {
+      font-size: 11px;
+      color: #6b7280;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 14px;
+      font-weight: 500;
+    }
+
+    .info-card {
+      background: #0f1117;
+      border: 1px solid #2a2d3a;
+      border-radius: 10px;
+      padding: 14px;
+    }
+
+    .info-card .place-name {
+      font-size: 15px;
+      font-weight: 600;
+      color: #e8e6df;
+      margin-bottom: 4px;
+    }
+
+    .info-card .place-address {
+      font-size: 12px;
+      color: #6b7280;
+      margin-bottom: 12px;
+      line-height: 1.5;
+    }
+
+    .info-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 6px 0;
+      border-top: 1px solid #1e2130;
+      font-size: 12px;
+    }
+
+    .info-row .label { color: #6b7280; }
+    .info-row .value { color: #93c5fd; font-family: 'DM Mono', monospace; font-size: 11px; }
+
+    .placeholder-msg {
+      font-size: 13px;
+      color: #4b5563;
+      text-align: center;
+      padding: 24px 0;
+      line-height: 1.6;
+    }
+
+    /* Markers list */
+    .markers-section {
+      padding: 20px;
+      flex: 1;
+    }
+
+    .markers-section h3 {
+      font-size: 11px;
+      color: #6b7280;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 14px;
+      font-weight: 500;
+    }
+
+    .marker-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 10px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.15s;
+      margin-bottom: 4px;
+    }
+
+    .marker-item:hover { background: #0f1117; }
+    .marker-item.active { background: #1e3a8a22; border: 1px solid #2563eb33; }
+
+    .marker-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #2563eb;
+      margin-top: 4px;
+      flex-shrink: 0;
+    }
+
+    .marker-info .name {
+      font-size: 13px;
+      font-weight: 500;
+      color: #e8e6df;
+      margin-bottom: 2px;
+    }
+
+    .marker-info .coords {
+      font-size: 11px;
+      color: #6b7280;
+      font-family: monospace;
+    }
+
+    .no-markers {
+      font-size: 13px;
+      color: #4b5563;
+    }
+
+    /* Map */
+    #map {
+      flex: 1;
+      min-height: 300px;
+    }
+
+    /* Mode buttons */
+    .mode-section {
+      padding: 16px 20px;
+      border-bottom: 1px solid #2a2d3a;
+    }
+
+    .mode-section label {
+      display: block;
+      font-size: 11px;
+      color: #6b7280;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+      font-weight: 500;
+    }
+
+    .mode-btns {
+      display: flex;
+      gap: 6px;
+    }
+
+    .mode-btn {
+      flex: 1;
+      background: #0f1117;
+      border: 1px solid #2a2d3a;
+      color: #9ca3af;
+      padding: 8px;
+      border-radius: 7px;
+      font-size: 12px;
+      font-family: inherit;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .mode-btn.active {
+      background: #1e3a8a22;
+      border-color: #2563eb;
+      color: #60a5fa;
+    }
+
+    .tip {
+      padding: 14px 20px;
+      font-size: 12px;
+      color: #4b5563;
+      line-height: 1.5;
+      border-bottom: 1px solid #2a2d3a;
+    }
+
+    .tip span { color: #6b7280; }
+  </style>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono&display=swap" rel="stylesheet"/>
+</head>
+<body>
+
+<header>
+  <h1>🗺 Google Maps Demo</h1>
+  <span class="badge">Vanilla JS</span>
+</header>
+
+<div class="main">
+
+  <!-- Sidebar -->
+  <div class="sidebar">
+
+    <!-- Search -->
+    <div class="search-section">
+      <label>Search Location</label>
+      <input id="searchInput" type="text" placeholder="e.g. Chennai, India" style="width:100%" autocomplete="off"/>
+      <div style="font-size:11px;color:#4b5563;margin-top:6px;">Start typing — Google suggestions appear</div>
+    </div>
+
+    <!-- Map type -->
+    <div class="mode-section">
+      <label>Map Type</label>
+      <div class="mode-btns">
+        <button class="mode-btn active" data-type="roadmap">Road</button>
+        <button class="mode-btn" data-type="satellite">Satellite</button>
+        <button class="mode-btn" data-type="terrain">Terrain</button>
+        <button class="mode-btn" data-type="hybrid">Hybrid</button>
+      </div>
+    </div>
+
+    <!-- Tip -->
+    <div class="tip">
+      <span>💡 Tip:</span> Click anywhere on the map to drop a marker and see its coordinates.
+    </div>
+
+    <!-- Selected location info -->
+    <div class="info-section">
+      <h3>Selected Location</h3>
+      <div id="infoPanel">
+        <div class="placeholder-msg">Click the map or search a location to see details here.</div>
+      </div>
+    </div>
+
+    <!-- Dropped markers -->
+    <div class="markers-section">
+      <h3>Dropped Markers (<span id="markerCount">0</span>)</h3>
+      <div id="markerList"><p class="no-markers">No markers yet.</p></div>
+    </div>
+
+  </div>
+
+  <!-- Map -->
+  <div id="map"></div>
+
+</div>
+
+<script>
+  /* ── State ── */
+  let map = null, infoWindow = null;
+  let markers = [];
+  let activeMarkerIndex = null;
+  let mapReady = false;
+
+  /* ── Init map ── */
+  window.initMap = function () {
+    try {
+      infoWindow = new google.maps.InfoWindow();
+
+      map = new google.maps.Map(document.getElementById('map'), {
+        center: { lat: 13.0827, lng: 80.2707 },
+        zoom: 12,
+        mapTypeId: 'roadmap',
+        styles: darkMapStyle(),
+        zoomControl: true,
+        streetViewControl: false,
+        mapTypeControl: false,
+        fullscreenControl: true,
+      });
+
+      mapReady = true;
+      initAutocomplete();
+
+      /* Click → drop marker */
+      map.addListener('click', (e) => {
+        placeMarker(e.latLng, null);
+        reverseGeocode(e.latLng);
+      });
+    } catch (err) {
+      console.error('Map init failed:', err);
+      document.getElementById('map').innerHTML =
+        '<div style="color:#f87171;padding:24px;font-size:14px;">⚠️ Map failed to load. Check your API key and ensure Maps JavaScript API + Geocoding API are enabled.</div>';
+    }
+  };
+
+  /* ── Places Autocomplete (uses Maps JS API key — no Geocoding API needed) ── */
+  function initAutocomplete() {
+    const input = document.getElementById('searchInput');
+    const autocomplete = new google.maps.places.Autocomplete(input, {
+      fields: ['geometry', 'formatted_address', 'name'],
+    });
+    autocomplete.bindTo('bounds', map);
+    autocomplete.addListener('place_changed', () => {
+      const place = autocomplete.getPlace();
+      if (!place.geometry || !place.geometry.location) return;
+      const loc = place.geometry.location;
+      map.setCenter(loc);
+      map.setZoom(15);
+      const label = place.formatted_address || place.name;
+      placeMarker(loc, label);
+      showInfo(label, loc.lat(), loc.lng());
+    });
+  }
+
+  /* ── Click on map — show coords (no Geocoding API needed) ── */
+  function reverseGeocode(latlng) {
+    const label = `${latlng.lat().toFixed(5)}, ${latlng.lng().toFixed(5)}`;
+    showInfo(label, latlng.lat(), latlng.lng());
+    if (markers.length > 0) {
+      markers[markers.length - 1].label = label;
+      renderMarkerList();
+    }
+  }
+
+  /* ── Place marker ── */
+  function placeMarker(latlng, label) {
+    const marker = new google.maps.Marker({
+      position: latlng,
+      map: map,
+      animation: google.maps.Animation.DROP,
+      icon: {
+        path: google.maps.SymbolPath.CIRCLE,
+        scale: 9,
+        fillColor: '#2563eb',
+        fillOpacity: 1,
+        strokeColor: '#ffffff',
+        strokeWeight: 2,
+      }
+    });
+
+    const entry = {
+      marker,
+      lat: latlng.lat(),
+      lng: latlng.lng(),
+      label: label || `${latlng.lat().toFixed(4)}, ${latlng.lng().toFixed(4)}`
+    };
+
+    marker.addListener('click', () => {
+      const i = markers.indexOf(entry);
+      focusMarker(i);
+    });
+
+    markers.push(entry);
+    activeMarkerIndex = markers.length - 1;
+    renderMarkerList();
+    updateCount();
+  }
+
+  /* ── Info panel ── */
+  function showInfo(address, lat, lng) {
+    document.getElementById('infoPanel').innerHTML = `
+      <div class="info-card">
+        <div class="place-name">${address.split(',')[0]}</div>
+        <div class="place-address">${address}</div>
+        <div class="info-row">
+          <span class="label">Latitude</span>
+          <span class="value">${lat.toFixed(6)}</span>
+        </div>
+        <div class="info-row">
+          <span class="label">Longitude</span>
+          <span class="value">${lng.toFixed(6)}</span>
+        </div>
+        <div class="info-row">
+          <span class="label">Zoom level</span>
+          <span class="value">${map.getZoom()}</span>
+        </div>
+      </div>`;
+  }
+
+  /* ── Marker list ── */
+  function renderMarkerList() {
+    const list = document.getElementById('markerList');
+    if (markers.length === 0) {
+      list.innerHTML = '<p class="no-markers">No markers yet.</p>';
+      return;
+    }
+    list.innerHTML = markers.map((m, i) => `
+      <div class="marker-item ${i === activeMarkerIndex ? 'active' : ''}" onclick="focusMarker(${i})">
+        <div class="marker-dot"></div>
+        <div class="marker-info">
+          <div class="name">${m.label.split(',')[0]}</div>
+          <div class="coords">${m.lat.toFixed(4)}, ${m.lng.toFixed(4)}</div>
+        </div>
+      </div>`).join('');
+  }
+
+  window.focusMarker = function(i) {
+    activeMarkerIndex = i;
+    const m = markers[i];
+    map.panTo({ lat: m.lat, lng: m.lng });
+    map.setZoom(15);
+    showInfo(m.label, m.lat, m.lng);
+    renderMarkerList();
+  };
+
+  function updateCount() {
+    document.getElementById('markerCount').textContent = markers.length;
+  }
+
+  /* ── Map type buttons ── */
+  document.querySelectorAll('.mode-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      if (!mapReady || !map) return;
+      document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      map.setMapTypeId(btn.dataset.type);
+    });
+  });
+
+  /* ── Dark map style ── */
+  function darkMapStyle() {
+    return [
+      { elementType: 'geometry', stylers: [{ color: '#1a1d27' }] },
+      { elementType: 'labels.text.fill', stylers: [{ color: '#746855' }] },
+      { elementType: 'labels.text.stroke', stylers: [{ color: '#242f3e' }] },
+      { featureType: 'administrative.locality', elementType: 'labels.text.fill', stylers: [{ color: '#d59563' }] },
+      { featureType: 'poi', elementType: 'labels.text.fill', stylers: [{ color: '#d59563' }] },
+      { featureType: 'poi.park', elementType: 'geometry', stylers: [{ color: '#263c3f' }] },
+      { featureType: 'poi.park', elementType: 'labels.text.fill', stylers: [{ color: '#6b9a76' }] },
+      { featureType: 'road', elementType: 'geometry', stylers: [{ color: '#38414e' }] },
+      { featureType: 'road', elementType: 'geometry.stroke', stylers: [{ color: '#212a37' }] },
+      { featureType: 'road', elementType: 'labels.text.fill', stylers: [{ color: '#9ca5b3' }] },
+      { featureType: 'road.highway', elementType: 'geometry', stylers: [{ color: '#746855' }] },
+      { featureType: 'road.highway', elementType: 'geometry.stroke', stylers: [{ color: '#1f2835' }] },
+      { featureType: 'road.highway', elementType: 'labels.text.fill', stylers: [{ color: '#f3d19c' }] },
+      { featureType: 'transit', elementType: 'geometry', stylers: [{ color: '#2f3948' }] },
+      { featureType: 'transit.station', elementType: 'labels.text.fill', stylers: [{ color: '#d59563' }] },
+      { featureType: 'water', elementType: 'geometry', stylers: [{ color: '#17263c' }] },
+      { featureType: 'water', elementType: 'labels.text.fill', stylers: [{ color: '#515c6d' }] },
+      { featureType: 'water', elementType: 'labels.text.stroke', stylers: [{ color: '#17263c' }] },
+    ];
+  }
+</script>
+
+<!--
+  🔑 REPLACE YOUR_API_KEY below with your actual Google Maps API key.
+  Get one at: https://console.cloud.google.com/
+  Enable: Maps JavaScript API + Places API
+-->
+<script
+  src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDU_5EsK6k4HX7En0HVsfTrBXSvCiLX8gA&libraries=places&callback=initMap"
+  async defer>
+</script>
+
+</body>
+</html>
