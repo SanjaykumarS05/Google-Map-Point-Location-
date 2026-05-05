@@ -1,0 +1,780 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>CRM Maps Pro</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#07090f;
+  --s1:#0d1117;
+  --s2:#131820;
+  --s3:#1a2030;
+  --border:#1f2937;
+  --border2:#2d3748;
+  --text:#e2e8f0;
+  --text2:#94a3b8;
+  --text3:#4b5563;
+  --blue:#3b82f6;
+  --blue-d:#1d4ed8;
+  --green:#10b981;
+  --amber:#f59e0b;
+  --red:#ef4444;
+  --purple:#8b5cf6;
+  --cyan:#06b6d4;
+}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);height:100vh;display:flex;flex-direction:column;overflow:hidden;font-size:13px}
+
+/* ── TOP NAV ── */
+nav{
+  display:flex;align-items:center;gap:0;
+  background:var(--s1);border-bottom:1px solid var(--border);
+  height:48px;flex-shrink:0;padding:0 16px;gap:12px;
+}
+.nav-logo{font-size:14px;font-weight:600;color:var(--text);letter-spacing:-0.01em;display:flex;align-items:center;gap:8px}
+.nav-logo span{color:var(--blue)}
+.nav-sep{width:1px;height:24px;background:var(--border);margin:0 4px}
+.nav-tabs{display:flex;gap:2px}
+.nav-tab{padding:6px 14px;border-radius:6px;font-size:12px;font-weight:500;color:var(--text2);cursor:pointer;transition:all .15s;border:none;background:none}
+.nav-tab:hover{background:var(--s3);color:var(--text)}
+.nav-tab.active{background:var(--s3);color:var(--blue)}
+.nav-right{margin-left:auto;display:flex;align-items:center;gap:8px}
+.nav-btn{padding:6px 14px;border-radius:6px;font-size:12px;font-weight:500;cursor:pointer;transition:all .15s;border:1px solid var(--border2);background:var(--s3);color:var(--text)}
+.nav-btn:hover{border-color:var(--blue);color:var(--blue)}
+.nav-btn.primary{background:var(--blue);border-color:var(--blue);color:#fff}
+.nav-btn.primary:hover{background:var(--blue-d)}
+
+/* ── STATS BAR ── */
+.statsbar{
+  display:flex;gap:0;background:var(--s1);border-bottom:1px solid var(--border);
+  flex-shrink:0;
+}
+.stat{padding:10px 20px;display:flex;align-items:center;gap:12px;border-right:1px solid var(--border)}
+.stat-icon{width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0}
+.stat-body .label{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:1px}
+.stat-body .value{font-size:15px;font-weight:600;color:var(--text)}
+.stat-body .delta{font-size:10px;color:var(--green)}
+.stat-body .delta.neg{color:var(--red)}
+
+/* ── MAIN LAYOUT ── */
+.main{display:flex;flex:1;overflow:hidden}
+
+/* ── LEFT SIDEBAR ── */
+.sidebar{
+  width:280px;background:var(--s1);border-right:1px solid var(--border);
+  display:flex;flex-direction:column;overflow:hidden;flex-shrink:0;
+}
+.sb-header{padding:12px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.sb-title{font-size:11px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.08em}
+.sb-count{font-size:11px;background:var(--s3);color:var(--text2);padding:2px 8px;border-radius:20px}
+
+/* Filter pills */
+.filters{display:flex;gap:4px;padding:10px 14px;border-bottom:1px solid var(--border);flex-wrap:wrap}
+.pill{padding:4px 10px;border-radius:20px;font-size:11px;font-weight:500;cursor:pointer;border:1px solid var(--border2);background:none;color:var(--text2);transition:all .15s}
+.pill:hover{border-color:var(--border2);background:var(--s3)}
+.pill.active{background:var(--blue);border-color:var(--blue);color:#fff}
+.pill.green.active{background:var(--green);border-color:var(--green);color:#fff}
+.pill.amber.active{background:var(--amber);border-color:var(--amber);color:#000}
+.pill.red.active{background:var(--red);border-color:var(--red);color:#fff}
+.pill.purple.active{background:var(--purple);border-color:var(--purple);color:#fff}
+
+/* Search */
+.sb-search{padding:10px 14px;border-bottom:1px solid var(--border)}
+.sb-search input{width:100%;background:var(--s2);border:1px solid var(--border);color:var(--text);padding:7px 10px;border-radius:7px;font-size:12px;font-family:inherit;outline:none}
+.sb-search input:focus{border-color:var(--blue)}
+.sb-search input::placeholder{color:var(--text3)}
+
+/* Customer list */
+.cust-list{flex:1;overflow-y:auto;padding:6px}
+.cust-list::-webkit-scrollbar{width:4px}
+.cust-list::-webkit-scrollbar-track{background:transparent}
+.cust-list::-webkit-scrollbar-thumb{background:var(--border2);border-radius:4px}
+
+.cust-item{
+  padding:10px 10px;border-radius:8px;cursor:pointer;transition:all .15s;
+  border:1px solid transparent;margin-bottom:3px;
+}
+.cust-item:hover{background:var(--s2);border-color:var(--border)}
+.cust-item.active{background:var(--s3);border-color:var(--blue)}
+.cust-top{display:flex;align-items:center;gap:8px;margin-bottom:5px}
+.cust-avatar{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;flex-shrink:0}
+.cust-name{font-size:12px;font-weight:500;color:var(--text);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cust-bottom{display:flex;align-items:center;gap:6px;padding-left:36px}
+.badge{padding:2px 7px;border-radius:4px;font-size:10px;font-weight:500}
+.badge.customer{background:#10b98120;color:var(--green)}
+.badge.lead{background:#f59e0b20;color:var(--amber)}
+.badge.prospect{background:#8b5cf620;color:var(--purple)}
+.badge.churned{background:#ef444420;color:var(--red)}
+.cust-val{font-size:10px;color:var(--text3);margin-left:auto;font-family:'JetBrains Mono',monospace}
+
+/* ── MAP AREA ── */
+.map-wrap{flex:1;position:relative;display:flex;flex-direction:column}
+#map{flex:1}
+
+/* Map toolbar */
+.map-toolbar{
+  position:absolute;top:12px;left:12px;z-index:10;
+  display:flex;flex-direction:column;gap:6px;
+}
+.tool-btn{
+  width:34px;height:34px;border-radius:8px;display:flex;align-items:center;justify-content:center;
+  background:var(--s1);border:1px solid var(--border2);color:var(--text2);cursor:pointer;
+  font-size:15px;transition:all .15s;
+}
+.tool-btn:hover{border-color:var(--blue);color:var(--blue)}
+.tool-btn.active{background:var(--blue);border-color:var(--blue);color:#fff}
+
+/* Route toolbar */
+.route-bar{
+  position:absolute;top:12px;left:50%;transform:translateX(-50%);z-index:10;
+  background:var(--s1);border:1px solid var(--border2);border-radius:10px;padding:10px 14px;
+  min-width:360px;display:none;flex-direction:column;gap:8px;
+}
+.route-bar.show{display:flex}
+.route-bar label{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.07em}
+.route-bar input{
+  background:var(--s2);border:1px solid var(--border);color:var(--text);
+  padding:7px 10px;border-radius:6px;font-size:12px;font-family:inherit;outline:none;width:100%
+}
+.route-bar input:focus{border-color:var(--blue)}
+.route-bar input::placeholder{color:var(--text3)}
+.route-actions{display:flex;gap:6px}
+.route-actions button{flex:1;padding:7px;border-radius:6px;font-size:12px;font-weight:500;cursor:pointer;font-family:inherit;border:1px solid var(--border2);background:var(--s3);color:var(--text);transition:all .15s}
+.route-actions button.go{background:var(--blue);border-color:var(--blue);color:#fff}
+.route-actions button:hover{opacity:.85}
+
+/* Legend */
+.legend{
+  position:absolute;bottom:24px;left:12px;z-index:10;
+  background:var(--s1);border:1px solid var(--border2);border-radius:8px;padding:10px 12px;
+}
+.legend-title{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.07em;margin-bottom:8px}
+.legend-item{display:flex;align-items:center;gap:8px;margin-bottom:5px;font-size:11px;color:var(--text2)}
+.legend-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+
+/* ── RIGHT PANEL ── */
+.detail-panel{
+  width:300px;background:var(--s1);border-left:1px solid var(--border);
+  display:flex;flex-direction:column;overflow:hidden;flex-shrink:0;
+  transform:translateX(100%);transition:transform .25s;
+}
+.detail-panel.open{transform:translateX(0)}
+.dp-header{padding:14px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px}
+.dp-avatar{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:600;flex-shrink:0}
+.dp-name{font-size:14px;font-weight:600;color:var(--text)}
+.dp-role{font-size:11px;color:var(--text2)}
+.dp-close{margin-left:auto;width:24px;height:24px;border-radius:6px;display:flex;align-items:center;justify-content:center;cursor:pointer;background:var(--s3);color:var(--text2);font-size:14px;border:none}
+.dp-close:hover{color:var(--text)}
+
+.dp-section{padding:12px 14px;border-bottom:1px solid var(--border)}
+.dp-section-title{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.07em;margin-bottom:10px}
+.dp-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:7px}
+.dp-row .k{color:var(--text2);font-size:12px}
+.dp-row .v{color:var(--text);font-size:12px;font-weight:500;text-align:right}
+.dp-row .v.green{color:var(--green)}
+.dp-row .v.amber{color:var(--amber)}
+.dp-row .v.red{color:var(--red)}
+.dp-row .v.mono{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--cyan)}
+
+/* Pipeline */
+.pipeline{display:flex;gap:4px;margin-top:6px}
+.pipe-stage{flex:1;text-align:center}
+.pipe-bar{height:4px;border-radius:2px;margin-bottom:4px;background:var(--border)}
+.pipe-bar.filled{background:var(--blue)}
+.pipe-label{font-size:9px;color:var(--text3)}
+
+/* Activity */
+.activity-list{max-height:160px;overflow-y:auto}
+.activity-list::-webkit-scrollbar{width:3px}
+.activity-list::-webkit-scrollbar-thumb{background:var(--border2)}
+.act-item{display:flex;gap:8px;margin-bottom:8px;align-items:flex-start}
+.act-dot{width:6px;height:6px;border-radius:50%;background:var(--blue);margin-top:4px;flex-shrink:0}
+.act-text{font-size:11px;color:var(--text2);line-height:1.5}
+.act-date{font-size:10px;color:var(--text3)}
+
+/* Action buttons */
+.dp-actions{padding:12px 14px;display:flex;gap:6px;margin-top:auto}
+.dp-actions button{flex:1;padding:8px;border-radius:7px;font-size:12px;font-weight:500;cursor:pointer;font-family:inherit;border:1px solid var(--border2);background:var(--s3);color:var(--text);transition:all .15s}
+.dp-actions button:hover{border-color:var(--blue);color:var(--blue)}
+.dp-actions button.primary{background:var(--blue);border-color:var(--blue);color:#fff}
+.dp-actions button.primary:hover{background:var(--blue-d)}
+
+/* Route info card */
+.route-info{
+  position:absolute;bottom:24px;right:12px;z-index:10;
+  background:var(--s1);border:1px solid var(--border2);border-radius:8px;padding:12px 14px;
+  min-width:200px;display:none;
+}
+.route-info.show{display:block}
+.route-info .ri-title{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.07em;margin-bottom:8px}
+.route-info .ri-row{display:flex;justify-content:space-between;margin-bottom:5px;font-size:12px}
+.route-info .ri-row .rk{color:var(--text2)}
+.route-info .ri-row .rv{color:var(--text);font-weight:500}
+
+/* Notification toast */
+.toast{
+  position:fixed;bottom:20px;left:50%;transform:translateX(-50%);
+  background:var(--s3);border:1px solid var(--border2);color:var(--text);
+  padding:9px 16px;border-radius:8px;font-size:12px;z-index:9999;
+  opacity:0;transition:opacity .3s;pointer-events:none;
+}
+.toast.show{opacity:1}
+
+/* pac (Google autocomplete) dropdown dark style */
+.pac-container{background:var(--s2)!important;border:1px solid var(--border2)!important;border-radius:8px!important;margin-top:4px;font-family:'Inter',sans-serif!important}
+.pac-item{padding:8px 12px!important;color:var(--text2)!important;border-top:1px solid var(--border)!important;font-size:12px!important;cursor:pointer}
+.pac-item:hover,.pac-item-selected{background:var(--s3)!important}
+.pac-item-query{color:var(--text)!important;font-size:12px!important}
+.pac-matched{color:var(--blue)!important}
+.pac-icon{display:none!important}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">⬡ <span>CRM</span>Maps Pro</div>
+  <div class="nav-sep"></div>
+  <div class="nav-tabs">
+    <button class="nav-tab active" onclick="setTab(this,'map')">Map View</button>
+    <button class="nav-tab" onclick="setTab(this,'territory')">Territories</button>
+    <button class="nav-tab" onclick="setTab(this,'route')">Route Planner</button>
+  </div>
+  <div class="nav-right">
+    <button class="nav-btn" onclick="toggleTraffic()">Traffic</button>
+    <button class="nav-btn" onclick="locateMe()">📍 My Location</button>
+    <button class="nav-btn primary" onclick="openAddLead()">+ Add Lead</button>
+  </div>
+</nav>
+
+<!-- STATS BAR -->
+<div class="statsbar">
+  <div class="stat">
+    <div class="stat-icon" style="background:#10b98120;color:var(--green)">✓</div>
+    <div class="stat-body">
+      <div class="label">Customers</div>
+      <div class="value" id="stat-customers">0</div>
+      <div class="delta">↑ 3 this month</div>
+    </div>
+  </div>
+  <div class="stat">
+    <div class="stat-icon" style="background:#f59e0b20;color:var(--amber)">◎</div>
+    <div class="stat-body">
+      <div class="label">Active Leads</div>
+      <div class="value" id="stat-leads">0</div>
+      <div class="delta">↑ 7 this week</div>
+    </div>
+  </div>
+  <div class="stat">
+    <div class="stat-icon" style="background:#8b5cf620;color:var(--purple)">◈</div>
+    <div class="stat-body">
+      <div class="label">Prospects</div>
+      <div class="value" id="stat-prospects">0</div>
+      <div class="delta">↑ 2 new</div>
+    </div>
+  </div>
+  <div class="stat">
+    <div class="stat-icon" style="background:#3b82f620;color:var(--blue)">$</div>
+    <div class="stat-body">
+      <div class="label">Pipeline Value</div>
+      <div class="value" id="stat-value">₹0</div>
+      <div class="delta">↑ 12% MoM</div>
+    </div>
+  </div>
+  <div class="stat" style="border:none;margin-left:auto;background:none">
+    <div class="stat-body" style="display:flex;align-items:center;gap:8px">
+      <input id="globalSearch" placeholder="Search customers..." style="background:var(--s2);border:1px solid var(--border);color:var(--text);padding:7px 12px;border-radius:7px;font-size:12px;font-family:inherit;outline:none;width:200px"/>
+    </div>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+
+  <!-- LEFT SIDEBAR -->
+  <div class="sidebar">
+    <div class="sb-header">
+      <span class="sb-title">Contacts</span>
+      <span class="sb-count" id="list-count">0</span>
+    </div>
+    <div class="sb-search">
+      <input id="sideSearch" placeholder="Filter contacts..." oninput="filterList()"/>
+    </div>
+    <div class="filters">
+      <button class="pill active" onclick="filterStatus('all',this)">All</button>
+      <button class="pill green" onclick="filterStatus('customer',this)">Customer</button>
+      <button class="pill amber" onclick="filterStatus('lead',this)">Lead</button>
+      <button class="pill purple" onclick="filterStatus('prospect',this)">Prospect</button>
+      <button class="pill red" onclick="filterStatus('churned',this)">Churned</button>
+    </div>
+    <div class="cust-list" id="custList"></div>
+  </div>
+
+  <!-- MAP -->
+  <div class="map-wrap">
+
+    <!-- Map toolbar -->
+    <div class="map-toolbar">
+      <div class="tool-btn active" title="Pin View" onclick="setTool(this,'pin')">📌</div>
+      <div class="tool-btn" title="Cluster View" onclick="setTool(this,'cluster')">⬡</div>
+      <div class="tool-btn" title="Heatmap" onclick="toggleHeatmap(this)">🔥</div>
+      <div class="tool-btn" title="Satellite" onclick="toggleSatellite(this)">🛰</div>
+      <div class="tool-btn" title="Fit All" onclick="fitAll()">⤢</div>
+    </div>
+
+    <!-- Route bar -->
+    <div class="route-bar" id="routeBar">
+      <label>Route Planner</label>
+      <input id="routeOrigin" placeholder="From: your location or address"/>
+      <input id="routeDest" placeholder="To: customer or address"/>
+      <div class="route-actions">
+        <button onclick="closeRoute()">✕ Close</button>
+        <button class="go" onclick="calcRoute()">Get Directions →</button>
+      </div>
+    </div>
+
+    <div id="map"></div>
+
+    <!-- Legend -->
+    <div class="legend">
+      <div class="legend-title">Status</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#10b981"></div>Customer</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#f59e0b"></div>Lead</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#8b5cf6"></div>Prospect</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#ef4444"></div>Churned</div>
+    </div>
+
+    <!-- Route info -->
+    <div class="route-info" id="routeInfo">
+      <div class="ri-title">Route Summary</div>
+      <div class="ri-row"><span class="rk">Distance</span><span class="rv" id="ri-dist">—</span></div>
+      <div class="ri-row"><span class="rk">Duration</span><span class="rv" id="ri-dur">—</span></div>
+      <div class="ri-row"><span class="rk">Via</span><span class="rv" id="ri-via">—</span></div>
+    </div>
+  </div>
+
+  <!-- RIGHT DETAIL PANEL -->
+  <div class="detail-panel" id="detailPanel">
+    <div class="dp-header">
+      <div class="dp-avatar" id="dp-avatar"></div>
+      <div>
+        <div class="dp-name" id="dp-name"></div>
+        <div class="dp-role" id="dp-role"></div>
+      </div>
+      <button class="dp-close" onclick="closePanel()">✕</button>
+    </div>
+
+    <div class="dp-section">
+      <div class="dp-section-title">Contact Info</div>
+      <div class="dp-row"><span class="k">Company</span><span class="v" id="dp-company"></span></div>
+      <div class="dp-row"><span class="k">Email</span><span class="v" id="dp-email"></span></div>
+      <div class="dp-row"><span class="k">Phone</span><span class="v" id="dp-phone"></span></div>
+      <div class="dp-row"><span class="k">Location</span><span class="v mono" id="dp-loc"></span></div>
+    </div>
+
+    <div class="dp-section">
+      <div class="dp-section-title">Deal Info</div>
+      <div class="dp-row"><span class="k">Status</span><span class="v" id="dp-status"></span></div>
+      <div class="dp-row"><span class="k">Deal Value</span><span class="v green" id="dp-value"></span></div>
+      <div class="dp-row"><span class="k">Last Contact</span><span class="v" id="dp-last"></span></div>
+      <div class="dp-row"><span class="k">Close Prob.</span><span class="v" id="dp-prob"></span></div>
+      <div class="pipeline">
+        <div class="pipe-stage"><div class="pipe-bar filled" id="pp1"></div><div class="pipe-label">Intro</div></div>
+        <div class="pipe-stage"><div class="pipe-bar" id="pp2"></div><div class="pipe-label">Demo</div></div>
+        <div class="pipe-stage"><div class="pipe-bar" id="pp3"></div><div class="pipe-label">Proposal</div></div>
+        <div class="pipe-stage"><div class="pipe-bar" id="pp4"></div><div class="pipe-label">Close</div></div>
+      </div>
+    </div>
+
+    <div class="dp-section">
+      <div class="dp-section-title">Recent Activity</div>
+      <div class="activity-list" id="dp-activity"></div>
+    </div>
+
+    <div class="dp-actions">
+      <button onclick="routeToSelected()">🗺 Route</button>
+      <button onclick="callSelected()">📞 Call</button>
+      <button class="primary" onclick="editSelected()">Edit →</button>
+    </div>
+  </div>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ══════════════════════════════════════
+   CRM DATA
+══════════════════════════════════════ */
+const CRM_DATA = [
+  {id:1,name:'Priya Sharma',company:'Infosys Ltd',email:'priya@infosys.com',phone:'+91 98401 11111',status:'customer',value:285000,prob:100,stage:4,lat:13.0900,lng:80.2707,lastContact:'2 days ago',activities:['Renewal signed – ₹2.85L','Demo call completed','Onboarding done','Contract sent']},
+  {id:2,name:'Arjun Mehta',company:'TCS Digital',email:'arjun@tcs.com',phone:'+91 98402 22222',status:'lead',value:150000,prob:65,stage:2,lat:13.0650,lng:80.2500,lastContact:'1 day ago',activities:['Interested in Pro plan','Demo scheduled for Friday','Initial call done']},
+  {id:3,name:'Kavya Nair',company:'Wipro Tech',email:'kavya@wipro.com',phone:'+91 98403 33333',status:'prospect',value:95000,prob:30,stage:1,lat:13.0750,lng:80.2900,lastContact:'5 days ago',activities:['LinkedIn outreach replied','Referral from Priya']},
+  {id:4,name:'Rahul Gupta',company:'HCL Systems',email:'rahul@hcl.com',phone:'+91 98404 44444',status:'customer',value:420000,prob:100,stage:4,lat:13.1100,lng:80.2200,lastContact:'Today',activities:['Upsell closed – ₹4.2L','QBR meeting done','Support ticket resolved']},
+  {id:5,name:'Sneha Patel',company:'Tech Mahindra',email:'sneha@techmahindra.com',phone:'+91 98405 55555',status:'lead',value:200000,prob:55,stage:3,lat:13.0400,lng:80.2600,lastContact:'3 days ago',activities:['Proposal sent','Budget approval pending','Demo well received']},
+  {id:6,name:'Vikram Singh',company:'Cognizant',email:'vikram@cognizant.com',phone:'+91 98406 66666',status:'churned',value:0,prob:5,stage:0,lat:13.0500,lng:80.2100,lastContact:'45 days ago',activities:['Contract not renewed','Competitor won deal','Exit survey sent']},
+  {id:7,name:'Deepa Krishnan',company:'Mphasis',email:'deepa@mphasis.com',phone:'+91 98407 77777',status:'prospect',value:75000,prob:20,stage:1,lat:13.1200,lng:80.2500,lastContact:'1 week ago',activities:['Cold email opened','Website visited 3x']},
+  {id:8,name:'Arun Kumar',company:'Hexaware',email:'arun@hexaware.com',phone:'+91 98408 88888',status:'customer',value:185000,prob:100,stage:4,lat:13.0800,lng:80.3100,lastContact:'Yesterday',activities:['Monthly check-in done','Feature request logged','NPS score: 9']},
+  {id:9,name:'Meera Iyer',company:'Mindtree',email:'meera@mindtree.com',phone:'+91 98409 99999',status:'lead',value:310000,prob:70,stage:3,lat:13.0200,lng:80.2400,lastContact:'Today',activities:['Proposal revised','Legal reviewing contract','Demo done – loved it']},
+  {id:10,name:'Suresh Babu',company:'NIIT Tech',email:'suresh@niit.com',phone:'+91 98410 10101',status:'prospect',value:45000,prob:15,stage:1,lat:13.0950,lng:80.2350,lastContact:'2 weeks ago',activities:['Webinar attendee','Downloaded whitepaper']},
+];
+
+const STATUS_COLORS = {customer:'#10b981',lead:'#f59e0b',prospect:'#8b5cf6',churned:'#ef4444'};
+const AVATAR_BG = {customer:'#10b98130',lead:'#f59e0b30',prospect:'#8b5cf630',churned:'#ef444430'};
+
+/* ══════════════════════════════════════
+   STATE
+══════════════════════════════════════ */
+let map, markers={}, infoWindows={}, directionsService, directionsRenderer;
+let trafficLayer, heatmapLayer;
+let mapReady=false, activeFilter='all', selectedId=null;
+let heatmapOn=false, satelliteOn=false, trafficOn=false;
+
+/* ══════════════════════════════════════
+   INIT
+══════════════════════════════════════ */
+window.initMap = function() {
+  map = new google.maps.Map(document.getElementById('map'),{
+    center:{lat:13.07,lng:80.26},
+    zoom:12,
+    styles: darkStyle(),
+    zoomControl:true,
+    streetViewControl:false,
+    mapTypeControl:false,
+    fullscreenControl:false,
+  });
+
+  directionsService = new google.maps.DirectionsService();
+  directionsRenderer = new google.maps.DirectionsRenderer({
+    suppressMarkers:false,
+    polylineOptions:{strokeColor:'#3b82f6',strokeWeight:4,strokeOpacity:.8}
+  });
+  directionsRenderer.setMap(map);
+
+  trafficLayer = new google.maps.TrafficLayer();
+
+  heatmapLayer = new google.maps.visualization.HeatmapLayer({
+    data: CRM_DATA.map(c=>({location:new google.maps.LatLng(c.lat,c.lng),weight:c.value/100000})),
+    map: null,
+    radius:60,
+    gradient:['rgba(0,0,0,0)','rgba(59,130,246,.4)','rgba(139,92,246,.7)','rgba(239,68,68,1)']
+  });
+
+  // Route autocomplete
+  ['routeOrigin','routeDest'].forEach(id=>{
+    new google.maps.places.Autocomplete(document.getElementById(id),{fields:['geometry','formatted_address','name']});
+  });
+
+  mapReady = true;
+  renderAll();
+  updateStats();
+};
+
+/* ══════════════════════════════════════
+   RENDER MARKERS
+══════════════════════════════════════ */
+function renderAll() {
+  // Clear old
+  Object.values(markers).forEach(m=>m.setMap(null));
+  markers={};
+
+  const search = document.getElementById('sideSearch').value.toLowerCase();
+  const filtered = CRM_DATA.filter(c=>{
+    if(activeFilter!=='all' && c.status!==activeFilter) return false;
+    if(search && !c.name.toLowerCase().includes(search) && !c.company.toLowerCase().includes(search)) return false;
+    return true;
+  });
+
+  filtered.forEach(c=>{
+    const color = STATUS_COLORS[c.status];
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="32" height="40" viewBox="0 0 32 40">
+      <filter id="sh"><feDropShadow dx="0" dy="2" stdDeviation="2" flood-color="#000" flood-opacity=".4"/></filter>
+      <path d="M16 0C7.16 0 0 7.16 0 16c0 12 16 24 16 24s16-12 16-24C32 7.16 24.84 0 16 0z" fill="${color}" filter="url(#sh)"/>
+      <circle cx="16" cy="16" r="7" fill="white" opacity=".9"/>
+    </svg>`;
+    const icon = {url:'data:image/svg+xml;charset=UTF-8,'+encodeURIComponent(svg),scaledSize:new google.maps.Size(28,35),anchor:new google.maps.Point(14,35)};
+
+    const marker = new google.maps.Marker({
+      position:{lat:c.lat,lng:c.lng},
+      map,icon,
+      title:c.name,
+      animation: google.maps.Animation.DROP,
+    });
+
+    marker.addListener('click',()=>selectCustomer(c.id));
+    markers[c.id]=marker;
+  });
+
+  renderList(filtered);
+  document.getElementById('list-count').textContent = filtered.length;
+}
+
+/* ══════════════════════════════════════
+   SIDEBAR LIST
+══════════════════════════════════════ */
+function renderList(data) {
+  const list = document.getElementById('custList');
+  if(!data || data.length===0){list.innerHTML='<div style="padding:20px;color:var(--text3);text-align:center;font-size:12px">No contacts found</div>';return;}
+  list.innerHTML = data.map(c=>`
+    <div class="cust-item ${selectedId===c.id?'active':''}" onclick="selectCustomer(${c.id})">
+      <div class="cust-top">
+        <div class="cust-avatar" style="background:${AVATAR_BG[c.status]};color:${STATUS_COLORS[c.status]}">${c.name.split(' ').map(n=>n[0]).join('')}</div>
+        <div class="cust-name">${c.name}</div>
+      </div>
+      <div class="cust-bottom">
+        <span class="badge ${c.status}">${c.status}</span>
+        <span style="font-size:10px;color:var(--text3)">${c.company}</span>
+        <span class="cust-val">${c.value>0?'₹'+Math.round(c.value/1000)+'K':'—'}</span>
+      </div>
+    </div>`).join('');
+}
+
+/* ══════════════════════════════════════
+   SELECT CUSTOMER
+══════════════════════════════════════ */
+function selectCustomer(id) {
+  selectedId = id;
+  const c = CRM_DATA.find(x=>x.id===id);
+  if(!c) return;
+
+  // Pan map
+  map.panTo({lat:c.lat,lng:c.lng});
+  map.setZoom(15);
+
+  // Bounce marker
+  Object.values(markers).forEach(m=>m.setAnimation(null));
+  if(markers[id]) markers[id].setAnimation(google.maps.Animation.BOUNCE);
+  setTimeout(()=>{if(markers[id])markers[id].setAnimation(null)},1400);
+
+  // Fill detail panel
+  const color = STATUS_COLORS[c.status];
+  document.getElementById('dp-avatar').style.background = AVATAR_BG[c.status];
+  document.getElementById('dp-avatar').style.color = color;
+  document.getElementById('dp-avatar').textContent = c.name.split(' ').map(n=>n[0]).join('');
+  document.getElementById('dp-name').textContent = c.name;
+  document.getElementById('dp-role').textContent = c.company;
+  document.getElementById('dp-company').textContent = c.company;
+  document.getElementById('dp-email').textContent = c.email;
+  document.getElementById('dp-phone').textContent = c.phone;
+  document.getElementById('dp-loc').textContent = `${c.lat.toFixed(4)}, ${c.lng.toFixed(4)}`;
+  document.getElementById('dp-value').textContent = c.value>0?'₹'+c.value.toLocaleString('en-IN'):'—';
+  document.getElementById('dp-last').textContent = c.lastContact;
+  document.getElementById('dp-prob').textContent = c.prob+'%';
+
+  const statusEl = document.getElementById('dp-status');
+  const colorMap={customer:'green',lead:'amber',prospect:'amber',churned:'red'};
+  statusEl.className='v '+colorMap[c.status];
+  statusEl.textContent = c.status.charAt(0).toUpperCase()+c.status.slice(1);
+
+  // Pipeline stages
+  [1,2,3,4].forEach(i=>{
+    const el = document.getElementById('pp'+i);
+    el.className='pipe-bar'+(c.stage>=i?' filled':'');
+  });
+
+  // Activities
+  document.getElementById('dp-activity').innerHTML = c.activities.map(a=>`
+    <div class="act-item">
+      <div class="act-dot"></div>
+      <div><div class="act-text">${a}</div></div>
+    </div>`).join('');
+
+  document.getElementById('detailPanel').classList.add('open');
+  renderList(getFilteredData());
+}
+
+function closePanel(){
+  document.getElementById('detailPanel').classList.remove('open');
+  selectedId=null;
+  Object.values(markers).forEach(m=>m.setAnimation(null));
+  renderList(getFilteredData());
+}
+
+/* ══════════════════════════════════════
+   STATS
+══════════════════════════════════════ */
+function updateStats(){
+  const counts={customer:0,lead:0,prospect:0,churned:0};
+  let total=0;
+  CRM_DATA.forEach(c=>{counts[c.status]++;total+=c.value;});
+  document.getElementById('stat-customers').textContent=counts.customer;
+  document.getElementById('stat-leads').textContent=counts.lead;
+  document.getElementById('stat-prospects').textContent=counts.prospect;
+  document.getElementById('stat-value').textContent='₹'+Math.round(total/100000)/10+'L';
+}
+
+/* ══════════════════════════════════════
+   FILTERS
+══════════════════════════════════════ */
+function filterStatus(status,el){
+  activeFilter=status;
+  document.querySelectorAll('.pill').forEach(p=>p.classList.remove('active'));
+  el.classList.add('active');
+  renderAll();
+}
+
+function filterList(){renderAll();}
+
+document.getElementById('globalSearch').addEventListener('input',function(){
+  document.getElementById('sideSearch').value=this.value;
+  renderAll();
+});
+
+function getFilteredData(){
+  const search=document.getElementById('sideSearch').value.toLowerCase();
+  return CRM_DATA.filter(c=>{
+    if(activeFilter!=='all'&&c.status!==activeFilter)return false;
+    if(search&&!c.name.toLowerCase().includes(search)&&!c.company.toLowerCase().includes(search))return false;
+    return true;
+  });
+}
+
+/* ══════════════════════════════════════
+   MAP TOOLS
+══════════════════════════════════════ */
+function setTool(el,type){
+  document.querySelectorAll('.tool-btn').forEach(b=>{if(b.title==='Pin View'||b.title==='Cluster View')b.classList.remove('active')});
+  el.classList.add('active');
+  toast('Switched to '+type+' view');
+}
+
+function toggleHeatmap(el){
+  heatmapOn=!heatmapOn;
+  heatmapLayer.setMap(heatmapOn?map:null);
+  el.classList.toggle('active',heatmapOn);
+  toast(heatmapOn?'Heatmap ON':'Heatmap OFF');
+}
+
+function toggleSatellite(el){
+  satelliteOn=!satelliteOn;
+  map.setMapTypeId(satelliteOn?'hybrid':'roadmap');
+  if(!satelliteOn) map.setOptions({styles:darkStyle()});
+  el.classList.toggle('active',satelliteOn);
+}
+
+function fitAll(){
+  const bounds=new google.maps.LatLngBounds();
+  Object.values(markers).forEach(m=>bounds.extend(m.getPosition()));
+  if(Object.keys(markers).length>0)map.fitBounds(bounds);
+}
+
+function toggleTraffic(){
+  trafficOn=!trafficOn;
+  trafficLayer.setMap(trafficOn?map:null);
+  toast(trafficOn?'Traffic layer ON':'Traffic layer OFF');
+}
+
+function locateMe(){
+  if(!navigator.geolocation){toast('Geolocation not supported');return;}
+  navigator.geolocation.getCurrentPosition(pos=>{
+    const loc={lat:pos.coords.latitude,lng:pos.coords.longitude};
+    map.panTo(loc);map.setZoom(13);
+    new google.maps.Marker({
+      position:loc,map,
+      icon:{path:google.maps.SymbolPath.CIRCLE,scale:8,fillColor:'#3b82f6',fillOpacity:1,strokeColor:'#fff',strokeWeight:2},
+      title:'You are here'
+    });
+    toast('📍 Located you!');
+  },()=>toast('Location access denied'));
+}
+
+/* ══════════════════════════════════════
+   ROUTE PLANNER
+══════════════════════════════════════ */
+function setTab(el,tab){
+  document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  if(tab==='route'){document.getElementById('routeBar').classList.add('show');}
+  else{document.getElementById('routeBar').classList.remove('show');}
+}
+
+function closeRoute(){
+  document.getElementById('routeBar').classList.remove('show');
+  document.querySelectorAll('.nav-tab')[0].classList.add('active');
+  document.querySelectorAll('.nav-tab')[2].classList.remove('active');
+  directionsRenderer.setDirections({routes:[]});
+  document.getElementById('routeInfo').classList.remove('show');
+}
+
+function calcRoute(){
+  const origin=document.getElementById('routeOrigin').value;
+  const dest=document.getElementById('routeDest').value;
+  if(!origin||!dest){toast('Enter both origin and destination');return;}
+  directionsService.route({
+    origin,destination:dest,
+    travelMode:google.maps.TravelMode.DRIVING
+  },(res,status)=>{
+    if(status==='OK'){
+      directionsRenderer.setDirections(res);
+      const leg=res.routes[0].legs[0];
+      document.getElementById('ri-dist').textContent=leg.distance.text;
+      document.getElementById('ri-dur').textContent=leg.duration.text;
+      document.getElementById('ri-via').textContent=res.routes[0].summary||'—';
+      document.getElementById('routeInfo').classList.add('show');
+    } else {
+      toast('Route not found: '+status);
+    }
+  });
+}
+
+function routeToSelected(){
+  if(!selectedId) return;
+  const c=CRM_DATA.find(x=>x.id===selectedId);
+  document.getElementById('routeDest').value=c.lat+','+c.lng;
+  document.getElementById('routeBar').classList.add('show');
+  document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.nav-tab')[2].classList.add('active');
+  toast('Set destination to '+c.name);
+}
+
+function openAddLead(){toast('Add Lead form — connect to your backend!');}
+function callSelected(){if(selectedId){const c=CRM_DATA.find(x=>x.id===selectedId);toast('Calling '+c.name+' at '+c.phone);}}
+function editSelected(){if(selectedId){const c=CRM_DATA.find(x=>x.id===selectedId);toast('Opening edit form for '+c.name);}}
+
+/* ══════════════════════════════════════
+   TOAST
+══════════════════════════════════════ */
+let toastTimer;
+function toast(msg){
+  const el=document.getElementById('toast');
+  el.textContent=msg;el.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(()=>el.classList.remove('show'),2500);
+}
+
+/* ══════════════════════════════════════
+   DARK MAP STYLE
+══════════════════════════════════════ */
+function darkStyle(){return[
+  {elementType:'geometry',stylers:[{color:'#0d1117'}]},
+  {elementType:'labels.text.stroke',stylers:[{color:'#0d1117'}]},
+  {elementType:'labels.text.fill',stylers:[{color:'#4b5563'}]},
+  {featureType:'administrative',elementType:'geometry',stylers:[{color:'#1f2937'}]},
+  {featureType:'administrative.country',elementType:'labels.text.fill',stylers:[{color:'#9ca3af'}]},
+  {featureType:'administrative.locality',elementType:'labels.text.fill',stylers:[{color:'#6b7280'}]},
+  {featureType:'poi',elementType:'labels',stylers:[{visibility:'off'}]},
+  {featureType:'road',elementType:'geometry',stylers:[{color:'#1e2937'}]},
+  {featureType:'road',elementType:'geometry.stroke',stylers:[{color:'#131c28'}]},
+  {featureType:'road',elementType:'labels.text.fill',stylers:[{color:'#374151'}]},
+  {featureType:'road.highway',elementType:'geometry',stylers:[{color:'#1e3a5f'}]},
+  {featureType:'road.highway',elementType:'geometry.stroke',stylers:[{color:'#0f2440'}]},
+  {featureType:'road.highway',elementType:'labels.text.fill',stylers:[{color:'#3b82f6'}]},
+  {featureType:'transit',stylers:[{visibility:'off'}]},
+  {featureType:'water',elementType:'geometry',stylers:[{color:'#060d18'}]},
+  {featureType:'water',elementType:'labels.text.fill',stylers:[{color:'#1e3a5f'}]},
+];}
+</script>
+
+<!--
+  🔑 Replace YOUR_API_KEY with your Google Maps API key
+  Enable in Google Cloud Console:
+    ✅ Maps JavaScript API
+    ✅ Places API
+    ✅ Directions API
+    ✅ Maps JavaScript API (Visualization library for heatmap)
+-->
+<script src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&libraries=places,visualization&callback=initMap" async defer></script>
+</body>
+</html>
